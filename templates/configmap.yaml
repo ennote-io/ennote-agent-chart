@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "ennote-agent.fullname" . }}-config
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "ennote-agent.labels" . | nindent 4 }}
+data:
+  ENNOTE_API_URL: {{ .Values.ennote.api.url | quote }}
+  ENNOTE_K8S_TARGET_NAMESPACE: {{ .Release.Namespace | quote }}
+  ENNOTE_K8S_SECRET_PREFIX: {{ .Values.ennote.k8s.secretPrefix | quote }}
+  ENNOTE_K8S_INSTANCE_NAME: {{ include "ennote-agent.fullname" . | quote }}
+  ENNOTE_K8S_CLEANUP_ORPHANS: {{ .Values.ennote.k8s.cleanupOrphans | quote }}

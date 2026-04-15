@@ -1,0 +1,337 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "additionalProperties": false,
+  "properties": {
+    "affinity": {
+      "additionalProperties": false,
+      "description": "Advanced scheduling (e.g., keep pods apart or close to specific zones)",
+      "required": [],
+      "title": "affinity",
+      "type": "object"
+    },
+    "ennote": {
+      "additionalProperties": false,
+      "properties": {
+        "api": {
+          "additionalProperties": false,
+          "properties": {
+            "url": {
+              "default": "https://api1.ennote.io",
+              "title": "url",
+              "type": "string"
+            }
+          },
+          "required": [
+            "url"
+          ],
+          "title": "api",
+          "type": "object"
+        },
+        "auth": {
+          "additionalProperties": false,
+          "properties": {
+            "existingSecretKey": {
+              "default": "token",
+              "title": "existingSecretKey",
+              "type": "string"
+            },
+            "existingSecretName": {
+              "default": "",
+              "description": "Option B (Production Recommended): Use a pre-existing K8s secret in the same namespace.\nThis prevents the bootstrap token from being exposed in Helm release histories.",
+              "title": "existingSecretName",
+              "type": "string"
+            },
+            "token": {
+              "default": "",
+              "description": "Option A (Quickstart): Pass a short-lived (2-hour) bootstrap token directly via CLI.\nExample: --set ennote.auth.token=\"xyz...\"\nWARNING: Not recommended for GitOps workflows (ArgoCD/Flux) as it exposes the token in plain text.",
+              "title": "token",
+              "type": "string"
+            }
+          },
+          "required": [
+            "token",
+            "existingSecretName",
+            "existingSecretKey"
+          ],
+          "title": "auth",
+          "type": "object"
+        },
+        "k8s": {
+          "additionalProperties": false,
+          "properties": {
+            "cleanupOrphans": {
+              "default": false,
+              "description": "DANGER ZONE: Orphan Cleanup\nIf set to true, the agent will aggressively DELETE Kubernetes secrets in this namespace\nif they are removed from the upstream Ennote Cloud.\nLeave as 'false' if you prefer soft-deletes or manual K8s cleanup.",
+              "title": "cleanupOrphans",
+              "type": "boolean"
+            },
+            "secretPrefix": {
+              "default": "",
+              "description": "Note: The agent is strictly locked via RBAC to sync secrets ONLY within its installation namespace.\nPrefix added to K8s secrets created by the agent to prevent naming collisions.",
+              "title": "secretPrefix",
+              "type": "string"
+            }
+          },
+          "required": [
+            "secretPrefix",
+            "cleanupOrphans"
+          ],
+          "title": "k8s",
+          "type": "object"
+        }
+      },
+      "required": [
+        "api",
+        "k8s",
+        "auth"
+      ],
+      "title": "ennote",
+      "type": "object"
+    },
+    "global": {
+      "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
+      "required": [],
+      "title": "global",
+      "type": "object"
+    },
+    "image": {
+      "additionalProperties": false,
+      "properties": {
+        "pullPolicy": {
+          "default": "IfNotPresent",
+          "title": "pullPolicy",
+          "type": "string"
+        },
+        "repository": {
+          "default": "registry-us1.ennote.io/ennote-k8s-agent",
+          "title": "repository",
+          "type": "string"
+        },
+        "tag": {
+          "default": "latest",
+          "title": "tag",
+          "type": "string"
+        }
+      },
+      "required": [
+        "repository",
+        "pullPolicy",
+        "tag"
+      ],
+      "title": "image",
+      "type": "object"
+    },
+    "nodeSelector": {
+      "additionalProperties": false,
+      "description": "Assign to specific nodes (e.g., node-role.kubernetes.io/infra: \"true\")",
+      "required": [],
+      "title": "nodeSelector",
+      "type": "object"
+    },
+    "podSecurityContext": {
+      "additionalProperties": false,
+      "description": "Pod-level security context. Enforces that the pod runs as a non-root user.",
+      "properties": {
+        "fsGroup": {
+          "default": 2000,
+          "title": "fsGroup",
+          "type": "integer"
+        },
+        "runAsGroup": {
+          "default": 3000,
+          "title": "runAsGroup",
+          "type": "integer"
+        },
+        "runAsUser": {
+          "default": 1000,
+          "title": "runAsUser",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "runAsUser",
+        "runAsGroup",
+        "fsGroup"
+      ],
+      "title": "podSecurityContext",
+      "type": "object"
+    },
+    "replicaCount": {
+      "default": 1,
+      "title": "replicaCount",
+      "type": "integer"
+    },
+    "resources": {
+      "additionalProperties": false,
+      "properties": {
+        "limits": {
+          "additionalProperties": false,
+          "description": "Limits are set generously for standard synchronization tasks.\nProfile your agent's memory usage and lower these if running in highly resource-constrained clusters.",
+          "properties": {
+            "cpu": {
+              "default": "500m",
+              "title": "cpu",
+              "type": "string"
+            },
+            "memory": {
+              "default": "512Mi",
+              "title": "memory",
+              "type": "string"
+            }
+          },
+          "required": [
+            "cpu",
+            "memory"
+          ],
+          "title": "limits",
+          "type": "object"
+        },
+        "requests": {
+          "additionalProperties": false,
+          "properties": {
+            "cpu": {
+              "default": "100m",
+              "title": "cpu",
+              "type": "string"
+            },
+            "memory": {
+              "default": "256Mi",
+              "title": "memory",
+              "type": "string"
+            }
+          },
+          "required": [
+            "cpu",
+            "memory"
+          ],
+          "title": "requests",
+          "type": "object"
+        }
+      },
+      "required": [
+        "limits",
+        "requests"
+      ],
+      "title": "resources",
+      "type": "object"
+    },
+    "securityContext": {
+      "additionalProperties": false,
+      "description": "Container-level security context. Strict least-privilege defaults.",
+      "properties": {
+        "allowPrivilegeEscalation": {
+          "default": false,
+          "title": "allowPrivilegeEscalation",
+          "type": "boolean"
+        },
+        "capabilities": {
+          "additionalProperties": false,
+          "properties": {
+            "drop": {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  }
+                ],
+                "required": []
+              },
+              "title": "drop",
+              "type": "array"
+            }
+          },
+          "required": [
+            "drop"
+          ],
+          "title": "capabilities",
+          "type": "object"
+        },
+        "readOnlyRootFilesystem": {
+          "default": true,
+          "title": "readOnlyRootFilesystem",
+          "type": "boolean"
+        },
+        "runAsNonRoot": {
+          "default": true,
+          "title": "runAsNonRoot",
+          "type": "boolean"
+        },
+        "seccompProfile": {
+          "additionalProperties": false,
+          "properties": {
+            "type": {
+              "default": "RuntimeDefault",
+              "title": "type",
+              "type": "string"
+            }
+          },
+          "required": [
+            "type"
+          ],
+          "title": "seccompProfile",
+          "type": "object"
+        }
+      },
+      "required": [
+        "capabilities",
+        "readOnlyRootFilesystem",
+        "runAsNonRoot",
+        "allowPrivilegeEscalation",
+        "seccompProfile"
+      ],
+      "title": "securityContext",
+      "type": "object"
+    },
+    "serviceAccount": {
+      "additionalProperties": false,
+      "properties": {
+        "annotations": {
+          "additionalProperties": false,
+          "required": [],
+          "title": "annotations",
+          "type": "object"
+        },
+        "create": {
+          "default": true,
+          "description": "Specifies whether a ServiceAccount should be created. Required for RBAC secret management.",
+          "title": "create",
+          "type": "boolean"
+        },
+        "name": {
+          "default": "",
+          "description": "If not set and create is true, a name is automatically generated using the fullname template.",
+          "title": "name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "create",
+        "annotations",
+        "name"
+      ],
+      "title": "serviceAccount",
+      "type": "object"
+    },
+    "tolerations": {
+      "description": "Allow scheduling on tainted nodes",
+      "items": {
+        "required": []
+      },
+      "title": "tolerations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "replicaCount",
+    "image",
+    "ennote",
+    "serviceAccount",
+    "podSecurityContext",
+    "securityContext",
+    "resources",
+    "nodeSelector",
+    "affinity",
+    "tolerations"
+  ],
+  "type": "object"
+}

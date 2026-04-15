@@ -1,0 +1,61 @@
+name: Release and Sign Helm Chart
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+jobs:
+  publish-and-sign:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v5.0.0
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v4.1.1
+
+      - name: Lint Helm Chart
+        run: helm lint .
+
+      - name: Format Chart Version
+        id: vars
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Package Helm Chart
+        run: |
+          helm package . --version ${{ steps.vars.outputs.version }} --app-version ${{ steps.vars.outputs.version }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Chart to GHCR
+        id: push_chart
+        run: |
+          REPO=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          
+          helm push ennote-agent-${{ steps.vars.outputs.version }}.tgz oci://ghcr.io/$REPO/charts | tee push-output.txt
+          
+          DIGEST=$(grep -i 'Digest:' push-output.txt | awk '{print $2}')
+          echo "digest=$DIGEST" >> $GITHUB_OUTPUT
+          echo "repo_lower=$REPO" >> $GITHUB_OUTPUT
+
+      - name: Sign the OCI Artifact
+        run: |
+          cosign sign --yes ghcr.io/${{ steps.push_chart.outputs.repo_lower }}/charts/ennote-agent@${{ steps.push_chart.outputs.digest }}

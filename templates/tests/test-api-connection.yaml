@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "ennote-agent.fullname" . }}-test-connection"
+  labels:
+    {{- include "ennote-agent.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: wget
+      image: busybox:1.36
+      command: ['nslookup']
+      args: ['{{ splitList ":" .Values.ennote.api.url | first }}']
+  restartPolicy: Never
