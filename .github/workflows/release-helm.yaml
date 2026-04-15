@@ -48,7 +48,7 @@ jobs:
         run: |
           REPO=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           
-          helm push ennote-agent-${{ steps.vars.outputs.version }}.tgz oci://ghcr.io/$REPO/charts | tee push-output.txt
+          helm push ennote-agent-${{ steps.vars.outputs.version }}.tgz oci://ghcr.io/$REPO/charts 2>&1 | tee push-output.txt
           
           DIGEST=$(grep -i 'Digest:' push-output.txt | awk '{print $2}')
           echo "digest=$DIGEST" >> $GITHUB_OUTPUT
