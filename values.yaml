@@ -1,0 +1,77 @@
+# Default values for ennote-agent.
+# This chart deploys a zero-ingress, headless K8s secret synchronization worker.
+# Official Documentation: https://github.com/ennote-io/ennote-agent-chart
+
+replicaCount: 1
+
+image:
+  repository: registry-us1.ennote.io/ennote-k8s-agent
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+ennote:
+  api:
+    url: "https://api1.ennote.io"
+  k8s:
+    # Note: The agent is strictly locked via RBAC to sync secrets ONLY within its installation namespace.
+    # Prefix added to K8s secrets created by the agent to prevent naming collisions.
+    secretPrefix: ""
+    # DANGER ZONE: Orphan Cleanup
+    # If set to true, the agent will aggressively DELETE Kubernetes secrets in this namespace
+    # if they are removed from the upstream Ennote Cloud.
+    # Leave as 'false' if you prefer soft-deletes or manual K8s cleanup.
+    cleanupOrphans: false
+
+  auth:
+    # Option A (Quickstart): Pass a short-lived (2-hour) bootstrap token directly via CLI.
+    # Example: --set ennote.auth.token="xyz..."
+    # WARNING: Not recommended for GitOps workflows (ArgoCD/Flux) as it exposes the token in plain text.
+    token: ""
+
+    # Option B (Production Recommended): Use a pre-existing K8s secret in the same namespace.
+    # This prevents the bootstrap token from being exposed in Helm release histories.
+    existingSecretName: ""
+    existingSecretKey: "token"
+
+serviceAccount:
+  # Specifies whether a ServiceAccount should be created. Required for RBAC secret management.
+  create: true
+  annotations: {}
+  # If not set and create is true, a name is automatically generated using the fullname template.
+  name: ""
+
+# Pod-level security context. Enforces that the pod runs as a non-root user.
+podSecurityContext:
+  runAsUser: 1000
+  runAsGroup: 3000
+  fsGroup: 2000
+
+# Container-level security context. Strict least-privilege defaults.
+securityContext:
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+  seccompProfile:
+    type: RuntimeDefault
+
+resources:
+  # Limits are set generously for standard synchronization tasks.
+  # Profile your agent's memory usage and lower these if running in highly resource-constrained clusters.
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+# Assign to specific nodes (e.g., node-role.kubernetes.io/infra: "true")
+nodeSelector: {}
+
+# Advanced scheduling (e.g., keep pods apart or close to specific zones)
+affinity: {}
+
+# Allow scheduling on tainted nodes
+tolerations: []

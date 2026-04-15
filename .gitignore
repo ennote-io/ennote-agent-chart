@@ -1,0 +1,12 @@
+# Packaged chart archives
+*.tgz
+*.prov
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.idea/
+.vscode/
+*.swp

@@ -1,0 +1,23 @@
+apiVersion: v2
+name: ennote-agent
+description: A Helm chart for the Ennote.io Kubernetes Secret Sync Agent.
+type: application
+
+version: 1.0.0
+appVersion: "1.0.0"
+
+home: https://ennote.io
+sources:
+  - https://github.com/ennote-io/ennote-agent-chart
+icon: https://media.ennote.io/en-logo-transparent.png
+
+keywords:
+  - secrets
+  - management
+  - ennote
+  - security
+  - operator
+
+maintainers:
+  - name: Ennote DevOps Team
+    email: support@ennote.io
