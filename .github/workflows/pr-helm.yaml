@@ -1,0 +1,29 @@
+name: Lint Helm Chart (PR Check)
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Helm
+        uses: azure/setup-helm@v5
+
+      - name: Lint Helm Chart
+        run: |
+          echo "Running Helm Lint..."
+          helm lint .
+
+      - name: Dry-Run Template Rendering
+        run: |
+          echo "Verifying templates can render successfully..."
+          helm template test-release .

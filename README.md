@@ -2,6 +2,8 @@
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/ennote)](https://artifacthub.io/packages/search?repo=ennote)
+[![Website](https://img.shields.io/badge/Website-Ennote.io-brightgreen.svg)](https://ennote.io)
+[![Documentation](https://img.shields.io/badge/Docs-Ennote%20Agent-blue.svg)](https://docs.ennote.io)
 
 A zero-ingress, headless Kubernetes synchronization worker for [Ennote.io](https://ennote.io). This agent securely pulls secrets from your Ennote Cloud and synchronizes them directly into Kubernetes native `Secret` objects within its deployed namespace.
 
@@ -27,8 +29,8 @@ Because this chart is hosted as an OCI artifact on the GitHub Container Registry
 Pass your short-lived (2-hour) bootstrap token directly.
 
 ```bash
-helm install ennote-agent oci://ghcr.io/ennote-io/charts/ennote-agent --version 1.0.0 \
-  --namespace ennote-sync --create-namespace \
+helm install ennote-agent oci://ghcr.io/ennote-io/charts/ennote-agent \
+  --namespace <YOUR_NAMESPACE> \
   --set ennote.auth.token="<YOUR_BOOTSTRAP_TOKEN>"
 ```
 
@@ -36,15 +38,14 @@ helm install ennote-agent oci://ghcr.io/ennote-io/charts/ennote-agent --version 
 For GitOps workflows (like ArgoCD or Flux), do not commit your token to version control. Instead, create a K8s secret first:
 
 ```bash
-kubectl create namespace ennote-sync
-kubectl create secret generic ennote-auth-secret --from-literal=token="<YOUR_BOOTSTRAP_TOKEN>" -n ennote-sync
+kubectl create secret generic ennote-auth-secret --from-literal=token="<YOUR_BOOTSTRAP_TOKEN>" -n <YOUR_NAMESPACE>
 ```
 
 Then, deploy the chart referencing that secret:
 
 ```bash
-helm install ennote-agent oci://ghcr.io/ennote-io/charts/ennote-agent --version 1.0.0 \
-  --namespace ennote-sync \
+helm install ennote-agent oci://ghcr.io/ennote-io/charts/ennote-agent \
+  --namespace <YOUR_NAMESPACE> \
   --set ennote.auth.existingSecretName="ennote-auth-secret" \
   --set ennote.auth.existingSecretKey="token"
 ```
@@ -55,33 +56,32 @@ We sign our OCI artifacts using GitHub OIDC via Sigstore's Cosign. To verify the
 
 ```bash
 # 1. Pull the chart locally
-helm pull oci://ghcr.io/ennote-io/charts/ennote-agent --version 1.0.0
+helm pull oci://ghcr.io/ennote-io/charts/ennote-agent
 
 # 2. Verify the signature against the Ennote GitHub Actions identity
 cosign verify \
-  --certificate-oidc-issuer="[https://token.actions.githubusercontent.com](https://token.actions.githubusercontent.com)" \
-  --certificate-identity-regexp="^[https://github.com/ennote-io/](https://github.com/ennote-io/).*" \
-  ghcr.io/ennote-io/charts/ennote-agent:1.0.0
+  --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
+  --certificate-identity-regexp="^https://github.com/ennote-io/.*" \
+  ghcr.io/ennote-io/charts/ennote-agent
 ```
 
 ## Configuration Parameters
 
 Below are the primary configuration parameters. For a complete list, view the `values.yaml` file.
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `ennote.k8s.secretPrefix` | Prefix added to K8s secrets created by the agent | `""` |
-| `ennote.k8s.cleanupOrphans` | Automatically delete K8s secrets if removed from the Ennote Cloud | `false` |
-| `ennote.auth.token` | Bootstrap token (Not recommended for GitOps) | `""` |
-| `ennote.auth.existingSecretName` | Name of existing secret containing the token | `""` |
-| `resources.limits` | CPU/Memory limits | `500m / 512Mi` |
+| Parameter                        | Description                                                       | Default  |
+|----------------------------------|-------------------------------------------------------------------|----------|
+| `ennote.k8s.secretPrefix`        | Prefix added to K8s secrets created by the agent                  | `""`     |
+| `ennote.k8s.cleanupOrphans`      | Automatically delete K8s secrets if removed from the Ennote Cloud | `false`  |
+| `ennote.auth.token`              | Bootstrap token (Not recommended for GitOps)                      | `""`     |
+| `ennote.auth.existingSecretName` | Name of existing secret containing the token                      | `""`     |
 
 ## Uninstalling the Chart
 
 To uninstall/delete the `ennote-agent` deployment:
 
 ```bash
-helm uninstall ennote-agent --namespace ennote-sync
+helm uninstall ennote-agent --namespace <YOUR_NAMESPACE>
 ```
 
 ---
