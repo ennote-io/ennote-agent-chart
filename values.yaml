@@ -11,7 +11,7 @@ image:
 
 ennote:
   api:
-    url: "api1.ennote.io:443"
+    url: "api.ennote.io:443"
   k8s:
     # Note: The agent is strictly locked via RBAC to sync secrets ONLY within its installation namespace.
     # Prefix added to K8s secrets created by the agent to prevent naming collisions.
