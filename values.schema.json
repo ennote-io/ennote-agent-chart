@@ -88,6 +88,12 @@
       "title": "ennote",
       "type": "object"
     },
+    "fullnameOverride": {
+      "default": "",
+      "description": "Fully override the resource name (takes precedence over nameOverride)",
+      "title": "fullnameOverride",
+      "type": "string"
+    },
     "global": {
       "description": "Global values are values that can be accessed from any chart or subchart by exactly the same name.",
       "required": [],
@@ -120,6 +126,12 @@
       ],
       "title": "image",
       "type": "object"
+    },
+    "nameOverride": {
+      "default": "",
+      "description": "Override the resource name (default: ennote-agent)",
+      "title": "nameOverride",
+      "type": "string"
     },
     "nodeSelector": {
       "additionalProperties": false,

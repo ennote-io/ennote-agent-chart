@@ -2,12 +2,16 @@
 # This chart deploys a zero-ingress, headless K8s secret synchronization worker.
 # Official Documentation: https://github.com/ennote-io/ennote-agent-chart
 
+# Resource name defaults to "ennote-agent". Set one of these to change it.
+nameOverride: ""
+fullnameOverride: ""
+
 replicaCount: 1
 
 image:
   repository: registry-us1.ennote.io/ennote-k8s-agent
   pullPolicy: Always
-  tag: "latest"
+  tag: 1.0.2
 
 ennote:
   api:
