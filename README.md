@@ -29,7 +29,7 @@ Because this chart is hosted as an OCI artifact on the GitHub Container Registry
 Pass your short-lived (2-hour) bootstrap token directly.
 
 ```bash
-helm install ennote-agent oci://ghcr.io/ennote-io/charts/ennote-agent \
+helm install ennote-agent oci://ghcr.io/ennote-io/charts/ennote-agent-chart \
   --namespace <YOUR_NAMESPACE> \
   --set ennote.auth.token="<YOUR_BOOTSTRAP_TOKEN>"
 ```
@@ -44,7 +44,7 @@ kubectl create secret generic ennote-auth-secret --from-literal=token="<YOUR_BOO
 Then, deploy the chart referencing that secret:
 
 ```bash
-helm install ennote-agent oci://ghcr.io/ennote-io/charts/ennote-agent \
+helm install ennote-agent oci://ghcr.io/ennote-io/charts/ennote-agent-chart \
   --namespace <YOUR_NAMESPACE> \
   --set ennote.auth.existingSecretName="ennote-auth-secret" \
   --set ennote.auth.existingSecretKey="token"
@@ -56,13 +56,13 @@ We sign our OCI artifacts using GitHub OIDC via Sigstore's Cosign. To verify the
 
 ```bash
 # 1. Pull the chart locally
-helm pull oci://ghcr.io/ennote-io/charts/ennote-agent
+helm pull oci://ghcr.io/ennote-io/charts/ennote-agent-chart
 
 # 2. Verify the signature against the Ennote GitHub Actions identity
 cosign verify \
   --certificate-oidc-issuer="https://token.actions.githubusercontent.com" \
   --certificate-identity-regexp="^https://github.com/ennote-io/.*" \
-  ghcr.io/ennote-io/charts/ennote-agent
+  ghcr.io/ennote-io/charts/ennote-agent-chart
 ```
 
 ## Configuration Parameters

@@ -33,7 +33,9 @@ jobs:
         id: vars
         run: |
           VERSION=${GITHUB_REF_NAME#v}
+          CHART_NAME=$(helm show chart . | awk '/^name:/ {print $2}')
           echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "chart_name=$CHART_NAME" >> $GITHUB_OUTPUT
 
       - name: Package Helm Chart
         run: |
@@ -50,10 +52,10 @@ jobs:
         id: push_chart
         run: |
           REPO=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          
-          helm push ennote-agent-${{ steps.vars.outputs.version }}.tgz oci://ghcr.io/$REPO/charts
 
-          DIGEST=$(crane digest ghcr.io/$REPO/charts/ennote-agent:${{ steps.vars.outputs.version }})
+          helm push ${{ steps.vars.outputs.chart_name }}-${{ steps.vars.outputs.version }}.tgz oci://ghcr.io/$REPO/charts
+
+          DIGEST=$(crane digest ghcr.io/$REPO/charts/${{ steps.vars.outputs.chart_name }}:${{ steps.vars.outputs.version }})
           if [ -z "$DIGEST" ]; then
             echo "::error::Could not resolve digest for pushed chart"
             exit 1
@@ -64,8 +66,8 @@ jobs:
 
       - name: Tag Chart as Latest
         run: |
-          crane tag ghcr.io/${{ steps.push_chart.outputs.repo_lower }}/charts/ennote-agent@${{ steps.push_chart.outputs.digest }} latest
+          crane tag ghcr.io/${{ steps.push_chart.outputs.repo_lower }}/charts/${{ steps.vars.outputs.chart_name }}@${{ steps.push_chart.outputs.digest }} latest
 
       - name: Sign the OCI Artifact
         run: |
-          cosign sign --yes ghcr.io/${{ steps.push_chart.outputs.repo_lower }}/charts/ennote-agent@${{ steps.push_chart.outputs.digest }}
+          cosign sign --yes ghcr.io/${{ steps.push_chart.outputs.repo_lower }}/charts/${{ steps.vars.outputs.chart_name }}@${{ steps.push_chart.outputs.digest }}
